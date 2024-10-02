@@ -1,0 +1,24 @@
+#include <stdio.h>
+#include <math.h>
+
+int main() {
+    float capital, taxa, tempo, JurosSimples, montante;
+    
+    printf("Digite o valor do capital: ");
+    scanf("%f", &capital);
+    
+    printf("Digite a taxa de juros em decimal: ");
+    scanf("%f", &taxa);
+    
+    printf("Digite o tempo (anos): ");
+    scanf("%f", &tempo);
+    
+    JurosSimples = capital * taxa * tempo;
+    
+    montante = capital * pow(1 + taxa, tempo);
+    
+    printf("\nJuros Simples: %.2f\n", JurosSimples);
+    printf("montante (Juros Compostos): %.2f\n", montante);
+    
+    return 0;
+}
