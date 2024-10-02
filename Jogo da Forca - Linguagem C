@@ -1,0 +1,159 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+
+#define MAX_TENTATIVAS 6
+#define TAMANHO_PALAVRA 100
+
+typedef struct {
+    char nome[50];
+    int pontuacao;
+} Jogador;
+
+void limparTela() {
+    #ifdef _WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
+}
+
+void exibirPalavra(char palavra[], int letrasReveladas[]) {
+    for (int i = 0; i < strlen(palavra); i++) {
+        if (letrasReveladas[i]) {
+            printf("%c ", palavra[i]);
+        } else {
+            printf("_ ");
+        }
+    }
+    printf("\n");
+}
+
+int jaFoiTentada(char letra, char letrasTentadas[], int totalTentadas) {
+    for (int i = 0; i < totalTentadas; i++) {
+        if (letrasTentadas[i] == letra) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int palavraCompleta(int letrasReveladas[], int tamanho) {
+    for (int i = 0; i < tamanho; i++) {
+        if (!letrasReveladas[i]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+void adicionarPontos(Jogador *jogador, int resultado, int tentativasRestantes, int tamanhoPalavra, int erros) {
+    int pontosBase = tamanhoPalavra * 10;  // Baseado no tamanho da palavra
+    if (resultado == 1) {
+        jogador->pontuacao += pontosBase + (tentativasRestantes * 5) - (erros * 2); // Mais pontos se errou menos
+    } else {
+        jogador->pontuacao -= erros * 5;  // Perde pontos com base nos erros
+    }
+}
+
+void salvarPontuacao(Jogador jogador) {
+    FILE *arquivo = fopen("ranking.txt", "a");
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo de ranking.\n");
+        return;
+    }
+    fprintf(arquivo, "%s %d\n", jogador.nome, jogador.pontuacao);
+    fclose(arquivo);
+}
+
+void exibirRanking() {
+    FILE *arquivo = fopen("ranking.txt", "r");
+    if (arquivo == NULL) {
+        printf("Nenhum ranking disponível.\n");
+        return;
+    }
+    
+    char nome[50];
+    int pontuacao;
+    printf("Ranking:\n");
+    while (fscanf(arquivo, "%s %d", nome, &pontuacao) != EOF) {
+        printf("%s - %d pontos\n", nome, pontuacao);
+    }
+    fclose(arquivo);
+}
+
+int main() {
+    char palavraSecreta[TAMANHO_PALAVRA];
+    char dica[TAMANHO_PALAVRA];
+    int letrasReveladas[TAMANHO_PALAVRA] = {0};
+    char letrasTentadas[26];
+    int tentativasRestantes = MAX_TENTATIVAS;
+    int totalTentadas = 0;
+    int erros = 0;
+
+    Jogador jogador;
+    printf("Digite seu nome: ");
+    scanf("%s", jogador.nome);
+    jogador.pontuacao = 0;
+
+    printf("Digite a palavra secreta: ");
+    scanf("%s", palavraSecreta);
+    printf("Digite uma dica para a palavra: ");
+    scanf(" %[^\n]%*c", dica);  // Lê uma linha com espaços
+    limparTela();
+
+    int tamanhoPalavra = strlen(palavraSecreta);
+
+    while (tentativasRestantes > 0 && !palavraCompleta(letrasReveladas, tamanhoPalavra)) {
+        printf("Dica: %s\n", dica);
+        printf("Palavra: ");
+        exibirPalavra(palavraSecreta, letrasReveladas);
+
+        printf("Tentativas restantes: %d\n", tentativasRestantes);
+        printf("Pontuação atual: %d\n", jogador.pontuacao);
+
+        printf("Digite uma letra: ");
+        char chute;
+        scanf(" %c", &chute);
+        chute = tolower(chute);
+
+        if (jaFoiTentada(chute, letrasTentadas, totalTentadas)) {
+            printf("Você já tentou essa letra!\n");
+            continue;
+        }
+
+        letrasTentadas[totalTentadas++] = chute;
+
+        int acertou = 0;
+        for (int i = 0; i < tamanhoPalavra; i++) {
+            if (tolower(palavraSecreta[i]) == chute) {
+                letrasReveladas[i] = 1;
+                acertou = 1;
+            }
+        }
+
+        if (acertou) {
+            printf("Você acertou!\n");
+        } else {
+            tentativasRestantes--;
+            erros++;
+            printf("Você errou!\n");
+        }
+
+        limparTela();
+    }
+
+    if (palavraCompleta(letrasReveladas, tamanhoPalavra)) {
+        printf("Parabéns! Você venceu!\n");
+        adicionarPontos(&jogador, 1, tentativasRestantes, tamanhoPalavra, erros);
+    } else {
+        printf("Que pena! Você perdeu. A palavra era: %s\n", palavraSecreta);
+        adicionarPontos(&jogador, 0, tentativasRestantes, tamanhoPalavra, erros);
+    }
+
+    printf("Pontuação final: %d\n", jogador.pontuacao);
+    salvarPontuacao(jogador);
+    exibirRanking();
+
+    return 0;
