@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Nome da Equipe</title>
+    </head>
+    <body>
+      <h1>Nome da equipe 01</h1>
+      <h2>Nome do membro da equipe</h2>
+      <p>Nome: Joao Vitor</p>
+      <p>Cargo: Estagiario</p>
+      
+      <h2>Membro 02</h2>
+      <p>Nome: Maria</p>
+      <p>Cargo: Estagiaria</p>
+    </body>
+</html>
+
+Projeto criado com o intuito de desenvolver a habilidade em HTML
